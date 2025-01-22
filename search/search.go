@@ -2,6 +2,7 @@ package search
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -100,4 +101,57 @@ func chunkData(data []byte, buf_size int) ([][]byte, error) {
 		bytes_read += (end - start)
 	}
 	return chunks, nil
+}
+
+func SearchTextInFile3(fname, text string) (bool, error) {
+	file, err := os.OpenFile(fname, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+
+	wg := sync.WaitGroup{}
+	result_chan := make(chan bool)
+
+	stat, err := file.Stat()
+	if err != nil {
+		return false, err
+	}
+
+	file_size := stat.Size()
+	bytes_read := 0
+	buff := make([]byte, 10*Megabytes)
+
+	for bytes_read < int(file_size) {
+		n, err := file.ReadAt(buff, int64(bytes_read))
+		if err != nil && err != io.EOF {
+			return false, err
+		}
+
+		wg.Add(1)
+		go func(data []byte) {
+			defer wg.Done()
+
+			found := strings.Contains(string(data), text)
+			result_chan <- found
+
+		}(buff[:n])
+
+		bytes_read += n
+	}
+
+	go func() {
+		wg.Wait()
+		close(result_chan)
+	}()
+
+	for found := range result_chan {
+		if found {
+			return true, nil
+		}
+
+		// continue searching
+	}
+
+	return false, nil
 }

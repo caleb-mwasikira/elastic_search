@@ -112,7 +112,7 @@ func main() {
 	// log.Printf("files %v\n", files)
 
 	for _, file := range files {
-		found, err := search.SearchTextInFile2(file, search_text)
+		found, err := search.SearchTextInFile3(file, search_text)
 		if err != nil {
 			log.Fatalf("error searching for text in file %v; %v\n", file, err)
 			os.Exit(1)
