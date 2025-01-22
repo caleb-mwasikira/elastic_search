@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-const (
-	Kilobytes uint = 1024
-	Megabytes      = 1000 * Kilobytes
-	Gigabytes      = 1000 * Megabytes
-)
-
 var (
 	search_text string
 	files       []string = []string{}
@@ -118,7 +112,7 @@ func main() {
 	// log.Printf("files %v\n", files)
 
 	for _, file := range files {
-		found, err := search.SearchTextInFile(file, search_text)
+		found, err := search.SearchTextInFile2(file, search_text)
 		if err != nil {
 			log.Fatalf("error searching for text in file %v; %v\n", file, err)
 			os.Exit(1)
